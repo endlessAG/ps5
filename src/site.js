@@ -63,7 +63,7 @@ function render() {
 
   const reached = state === "done" ? STAGES.length - 1 : Math.max(current, 0);
   const span = STAGES.length - 1;
-  trackFill.style.width = (reached / span) * 100 + "%";
+  trackFill.style.transform = "scaleX(" + reached / span + ")";
 }
 
 function advance(id) {
