@@ -2,7 +2,6 @@
 Supported firmware: 7.00 through 13.60.
 
 ## Usage
-- Run `python fetch_payloads.py` once to download the payloads into `payloads/`. They are not committed here because they are third-party binaries under their own licenses. The script verifies each file against a pinned SHA-256 and is safe to re-run.
 - In the network settings, set Primary DNS to `45.56.67.85` (Recommended)
 - Run `python serve.py` locally, or open https://ntfargo.github.io/Relapse-Exploit/ on the PS5. Both paths need `payloads/` present, since the kernel stage fetches the binaries over HTTP at runtime.
 - The default payloads are stored in `payloads/` after a successful run, the ELF loader listens on port `9021`.
@@ -14,8 +13,22 @@ Webkit may need several attempts, reload the page if the browser stalls. The ker
 ## Exploit chain
 Browser stage uses JSC info leaks and a structured clone object pool mismatch to corrupt a typedarray. The kernel stage combines a address leak with an `aio_multi_wait` uaf race to establish kernel r/w.
 
+## Payloads
+`payloads/` is committed so a fresh clone runs without a setup step. These are third-party binaries, redistributed as-is and not covered by this repo's MIT license:
+
+| File | Source |
+| --- | --- |
+| `elfldr-ps5-1360.elf` | [ntfargo/Relapse-Exploit](https://github.com/ntfargo/Relapse-Exploit) |
+| `etaHEN.elf` | [ntfargo/Relapse-Exploit](https://github.com/ntfargo/Relapse-Exploit) |
+| `kexp_2026_05_25.bin` | [ntfargo/Relapse-Exploit](https://github.com/ntfargo/Relapse-Exploit) |
+| `kstuff.elf` | [ntfargo/Relapse-Exploit](https://github.com/ntfargo/Relapse-Exploit) |
+| `shadowmountplus.elf` | [ntfargo/Relapse-Exploit](https://github.com/ntfargo/Relapse-Exploit) |
+| `pldmgr_v0.5.2.elf` | [itsPLK/ps5-payload-manager](https://github.com/itsPLK/ps5-payload-manager) v0.5.2 |
+
+Run `python fetch_payloads.py` to verify the committed files against pinned SHA-256 hashes, or to re-download any that are missing or corrupt. It is safe to re-run.
+
 ## Credits
-ntfargo, ufm42, Sonic-Iso, Jordy, Dr. Yenyen, TheFlow, SlidyBat,  Flatz, cow, nhk, bollarz, Sleirsgoevy, EchoStretch, EarthOnion.
+ntfargo, ufm42, Sonic-Iso, Jordy, Dr. Yenyen, TheFlow, SlidyBat,  Flatz, cow, nhk, bollarz, Sleirsgoevy, EchoStretch, EarthOnion, itsPLK.
 
 ## Disclaimer
 This project is intended for **educational and security research purposes only**. It does not endorse piracy, unauthorized access, or misuse of commercial devices. Use it only on devices you own or are authorized to test, and comply with applicable laws and regulations.
