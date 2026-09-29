@@ -153,18 +153,28 @@ async function sendElf(name, payload, p, chain) {
   }
 }
 
-export const OPTIONAL_PAYLOADS = [
+// Sent to elfldr on port 9021, in this order, once the kernel stage completes.
+export const PAYLOAD_SEQUENCE = [
   { name: "pldmgr_v0.5.2.elf" },
+  { name: "kstuff.elf" },
+  { name: "shadowmountplus.elf" },
+  { name: "etaHEN.elf" },
 ];
 
-export async function loadOptionalPayloads(p, chain, log, list = OPTIONAL_PAYLOADS) {
-  log("preparing optional payloads");
-  for (const entry of list) {
+// Settle time between payloads so each one can initialise before the next
+// connection to elfldr. Override per entry with delayAfter.
+const PAYLOAD_SETTLE_MS = 4000;
+
+export async function loadPayloadSequence(p, chain, log, list = PAYLOAD_SEQUENCE) {
+  log("preparing payload sequence: " + list.map((entry) => entry.name).join(" -> "));
+  for (let i = 0; i < list.length; i++) {
+    const entry = list[i];
     const payload = await mapElf(entry.name, p, chain);
     await sendElf(entry.name, payload, p, chain);
-    log(entry.name + " sent");
-    if (entry.delayAfter)
-      await new Promise((resolve) => setTimeout(resolve, entry.delayAfter));
+    log(entry.name + " sent", "success");
+    if (i === list.length - 1) break;
+    const settle = entry.delayAfter !== undefined ? entry.delayAfter : PAYLOAD_SETTLE_MS;
+    await new Promise((resolve) => setTimeout(resolve, settle));
   }
 }
 

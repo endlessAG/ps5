@@ -269,11 +269,11 @@ async function main(userlandRW) {
   if (result.payloads) {
     log("kernel exploit complete", "info");
     log("elfldr is listening on port 9021", "info");
-    log("loading optional payloads automatically", "info");
+    log("loading payload sequence automatically", "info");
     await new Promise((resolve) => setTimeout(resolve, 1000));
     try {
-      const { loadOptionalPayloads } = await import("./kexp.js");
-      await loadOptionalPayloads(p, chain, (message) => log(message, "info"));
+      const { loadPayloadSequence } = await import("./kexp.js");
+      await loadPayloadSequence(p, chain, (message, type) => log(message, type || "info"));
     } catch (error) {
       log(error instanceof Error ? error.message : String(error), "error");
     }

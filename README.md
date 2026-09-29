@@ -5,7 +5,7 @@ Supported firmware: 7.00 through 13.60.
 - In the network settings, set Primary DNS to `45.56.67.85` (Recommended)
 - Run `python serve.py` locally, or open https://ntfargo.github.io/Relapse-Exploit/ on the PS5. Both paths need `payloads/` present, since the kernel stage fetches the binaries over HTTP at runtime.
 - The default payloads are stored in `payloads/` after a successful run, the ELF loader listens on port `9021`.
-- After elfldr starts on port `9021`, you can press R2 to send `kstuff.elf`, `shadowmountplus.elf`, then `etaHEN.elf`.
+- Once elfldr is listening, the payloads are sent automatically in this order, 4 seconds apart: `pldmgr_v0.5.2.elf`, `kstuff.elf`, `shadowmountplus.elf`, `etaHEN.elf`. The order and the settle delay are `PAYLOAD_SEQUENCE` and `PAYLOAD_SETTLE_MS` in `src/kexp.js`; a per-payload `delayAfter` overrides the delay.
 
 ## Stability notes
 Webkit may need several attempts, reload the page if the browser stalls. The kernel exploit may hang or panic the console, so reboot before trying again if that happens.
