@@ -3,127 +3,251 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>PS5-Relapse</title>
   <style>
+    :root {
+      --ink: #ffffff;
+      --muted: #7c8590;
+      --dim: #39414a;
+      --fail: #ff5f56;
+      --ok: #4ade80;
+    }
+
+    * { box-sizing: border-box; }
+
     html, body {
       margin: 0;
       padding: 0;
-      height: 100%;
-      background: #060606;
-      color: #fff;
+      min-height: 100%;
+      background: #05070a;
+      color: var(--ink);
       font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       -webkit-font-smoothing: antialiased;
     }
 
     body {
       display: flex;
-      flex-direction: column;
       align-items: center;
-      padding: 40px 24px 24px 24px;
-      box-sizing: border-box;
+      justify-content: center;
+      padding: 56px 32px;
+      overflow: hidden;
+    }
+
+    /* ambient light wash, echoing the PS5 boot rays */
+    .ray {
+      position: fixed;
+      top: -55vh;
+      left: 50%;
+      width: 34vw;
+      height: 120vh;
+      transform-origin: top center;
+      background: linear-gradient(to bottom,
+        rgba(150, 195, 255, 0.075) 0%,
+        rgba(150, 195, 255, 0.02) 45%,
+        transparent 78%);
+      filter: blur(28px);
+      pointer-events: none;
+    }
+
+    .glow {
+      position: fixed;
+      top: -38vh;
+      left: 50%;
+      width: 150vw;
+      height: 92vh;
+      margin-left: -75vw;
+      background: radial-gradient(ellipse at center,
+        rgba(130, 180, 255, 0.13) 0%,
+        rgba(130, 180, 255, 0.05) 38%,
+        transparent 70%);
+      pointer-events: none;
     }
 
     #app {
+      position: relative;
+      z-index: 1;
       width: 100%;
-      max-width: 460px;
-      display: flex;
-      flex-direction: column;
+      max-width: 560px;
+      text-align: center;
     }
 
     h1 {
-      margin: 0 0 4px 0;
-      font-size: 20px;
-      font-weight: 600;
-      letter-spacing: 0.2px;
+      margin: 0 0 10px 0;
+      font-size: 32px;
+      font-weight: 300;
+      letter-spacing: 5px;
+      text-transform: uppercase;
     }
 
     #sub {
-      margin: 0 0 28px 0;
-      font-size: 13px;
-      color: #8a8a8a;
+      margin: 0 0 46px 0;
+      font-size: 14px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
     }
 
     #status {
       display: flex;
       align-items: center;
-      font-size: 15px;
-      margin-bottom: 22px;
-      min-height: 20px;
+      justify-content: center;
+      min-height: 26px;
+      margin-bottom: 52px;
+      font-size: 19px;
+      font-weight: 400;
+      letter-spacing: 0.3px;
     }
 
-    #status-text {
-      font-weight: 500;
-    }
-
-    #status.failed #status-text { color: #ff6b6b; }
-    #status.done  #status-text { color: #4ade80; }
+    #status.done #status-text { color: var(--ok); }
+    #status.failed #status-text { color: var(--fail); }
 
     .spinner {
-      width: 15px;
-      height: 15px;
-      margin-right: 10px;
-      border: 2px solid #2e2e2e;
-      border-top-color: #e5e5e5;
+      width: 16px;
+      height: 16px;
+      margin-right: 12px;
+      border: 2px solid #1e242c;
+      border-top-color: #cfe2ff;
       border-radius: 50%;
-      animation: spin 0.75s linear infinite;
+      animation: spin 0.8s linear infinite;
       flex: 0 0 auto;
     }
 
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
     #status.done .spinner,
-    #status.failed .spinner {
-      display: none;
+    #status.failed .spinner { display: none; }
+
+    /* ---- stage rail ---- */
+
+    #progress {
+      position: relative;
+      margin: 0 12px 50px 12px;
     }
 
-    #stages {
-      list-style: none;
-      margin: 0 0 28px 0;
-      padding: 0;
+    #track {
+      position: absolute;
+      top: 31px;
+      left: 30px;
+      right: 30px;
+      height: 2px;
+      background: #1b2027;
+      overflow: hidden;
     }
 
-    .stage {
+    #track-fill {
+      width: 0;
+      height: 100%;
+      background: linear-gradient(to right, #4f9de0 0%, #cfe2ff 100%);
+      transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    #buttons {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .button {
+      position: relative;
+      width: 62px;
+      height: 62px;
       display: flex;
       align-items: center;
-      padding: 11px 0;
-      font-size: 14px;
-      border-bottom: 1px solid #161616;
+      justify-content: center;
     }
 
-    .stage:last-child { border-bottom: 0; }
+    .button svg {
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      transition: fill 0.35s ease, opacity 0.35s ease;
+    }
 
-    .stage .dot {
-      width: 8px;
-      height: 8px;
-      margin-right: 14px;
+    .button svg * {
+      fill: #12161c;
+      stroke: var(--brand);
+      stroke-width: 4;
+      transition: fill 0.35s ease, stroke 0.35s ease;
+    }
+
+    .button:nth-child(1) { --brand: #3aa8e0; }
+    .button:nth-child(2) { --brand: #e84040; }
+    .button:nth-child(3) { --brand: #5cb85c; }
+    .button:nth-child(4) { --brand: #c169c1; }
+
+    .button .label {
+      position: absolute;
+      top: 74px;
+      left: 50%;
+      width: 120px;
+      margin-left: -60px;
+      text-align: center;
+      font-size: 12px;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      color: var(--dim);
+      transition: color 0.35s ease;
+    }
+
+    .button.pending svg * { stroke: #232a33; }
+
+    .button.active svg * {
+      fill: #0e1319;
+      stroke: var(--brand);
+    }
+
+    .button.active::after {
+      content: "";
+      position: absolute;
+      top: -7px;
+      left: -7px;
+      width: 76px;
+      height: 76px;
       border-radius: 50%;
-      background: #2e2e2e;
-      flex: 0 0 auto;
+      border: 1px solid var(--brand);
+      opacity: 0.28;
+      animation: pulse 1.9s ease-in-out infinite;
     }
 
-    .stage .label { color: #4a4a4a; }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 0.28; }
+      50%      { transform: scale(1.13); opacity: 0.06; }
+    }
 
-    .stage.pending .dot { background: #2e2e2e; }
-    .stage.pending .label { color: #4a4a4a; }
+    .button.active .label { color: var(--ink); }
 
-    .stage.active .dot { background: #fff; }
-    .stage.active .label { color: #fff; }
+    .button.done svg * { fill: var(--brand); stroke: var(--brand); }
+    .button.done .label { color: var(--muted); }
 
-    .stage.done .dot { background: #4ade80; }
-    .stage.done .label { color: #8a8a8a; }
+    .button.failed svg * { fill: #2a1214; stroke: var(--fail); }
+    .button.failed .label { color: var(--fail); }
 
-    .stage.failed .dot { background: #ff6b6b; }
+    /* ---- messages ---- */
+
+    #error {
+      display: none;
+      margin: 0 auto 34px auto;
+      padding: 16px 20px;
+      max-width: 440px;
+      border-radius: 8px;
+      background: rgba(60, 16, 16, 0.55);
+      border: 1px solid rgba(255, 95, 86, 0.32);
+      color: #ffb3ae;
+      font-size: 14px;
+      line-height: 1.6;
+      text-align: left;
+    }
 
     #details {
-      border-top: 1px solid #161616;
-      padding-top: 14px;
+      display: inline-block;
+      text-align: left;
     }
 
     #details summary {
       font-size: 12px;
-      color: #6a6a6a;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      color: var(--muted);
       cursor: pointer;
       list-style: none;
       user-select: none;
@@ -132,41 +256,42 @@
     #details summary::-webkit-details-marker { display: none; }
 
     #details summary::before {
-      content: "› ";
+      content: "›";
       display: inline-block;
-      transition: transform 0.15s ease;
+      margin-right: 7px;
+      transition: transform 0.18s ease;
     }
 
-    #details[open] summary::before {
-      transform: rotate(90deg);
-    }
+    #details[open] summary::before { transform: rotate(90deg); }
 
     #details-log {
-      margin-top: 12px;
-      max-height: 40vh;
+      margin-top: 14px;
+      max-height: 38vh;
       overflow-y: auto;
       font-family: ui-monospace, Menlo, Consolas, monospace;
       font-size: 11px;
-      line-height: 1.55;
-      color: #6a6a6a;
+      line-height: 1.6;
+      color: #5d6672;
       white-space: pre-wrap;
       word-break: break-word;
     }
 
-    #error {
-      display: none;
-      margin: 0 0 20px 0;
-      padding: 12px 14px;
-      border-radius: 6px;
-      background: #1a0f0f;
-      border: 1px solid #3d1f1f;
-      color: #ff9a9a;
-      font-size: 13px;
-      line-height: 1.5;
+    @media (max-width: 520px) {
+      h1 { font-size: 24px; letter-spacing: 3px; }
+      #status { font-size: 17px; margin-bottom: 44px; }
+      .button { width: 52px; height: 52px; }
+      #track { top: 26px; left: 26px; right: 26px; }
+      .button .label { font-size: 10px; top: 64px; width: 96px; margin-left: -48px; }
     }
   </style>
 </head>
 <body>
+  <div class="glow"></div>
+  <div class="ray" style="transform: translateX(-50%) rotate(-19deg);"></div>
+  <div class="ray" style="transform: translateX(-50%) rotate(-7deg);"></div>
+  <div class="ray" style="transform: translateX(-50%) rotate(7deg);"></div>
+  <div class="ray" style="transform: translateX(-50%) rotate(19deg);"></div>
+
   <div id="app">
     <h1>PS5 Relapse</h1>
     <p id="sub">Firmware <span id="fw">&mdash;</span></p>
@@ -176,7 +301,10 @@
       <span id="status-text">Starting&hellip;</span>
     </div>
 
-    <ul id="stages"></ul>
+    <div id="progress">
+      <div id="track"><div id="track-fill"></div></div>
+      <div id="buttons"></div>
+    </div>
 
     <p id="error"></p>
 

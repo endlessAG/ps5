@@ -2,17 +2,29 @@ import { establishPrimitive } from "./webkit.js";
 import { installWindowP } from "./utils/mem.js";
 
 const STAGES = [
-  { id: "webkit", label: "Establishing WebKit primitive" },
-  { id: "readwrite", label: "Building memory read/write" },
-  { id: "kernel", label: "Running kernel exploit" },
-  { id: "payloads", label: "Loading payloads" },
+  { id: "webkit", shape: "triangle", label: "WebKit" },
+  { id: "readwrite", shape: "circle", label: "Read/Write" },
+  { id: "kernel", shape: "cross", label: "Kernel" },
+  { id: "payloads", shape: "square", label: "Payloads" },
 ];
+
+const SHAPES = {
+  triangle: '<polygon points="50,13 87,75 13,75"/>',
+  circle: '<circle cx="50" cy="50" r="36"/>',
+  cross:
+    '<g transform="rotate(45 50 50)">' +
+    '<rect x="35" y="9" width="30" height="82" rx="4"/>' +
+    '<rect x="9" y="35" width="82" height="30" rx="4"/>' +
+    "</g>",
+  square: '<rect x="16" y="16" width="68" height="68" rx="5"/>',
+};
 
 const STAGE_INDEX = new Map(STAGES.map((stage, index) => [stage.id, index]));
 
 const statusBox = document.getElementById("status");
 const statusText = document.getElementById("status-text");
-const stageList = document.getElementById("stages");
+const buttonRow = document.getElementById("buttons");
+const trackFill = document.getElementById("track-fill");
 const errorBox = document.getElementById("error");
 const logBox = document.getElementById("details-log");
 const details = document.getElementById("details");
@@ -22,37 +34,36 @@ let current = -1;
 let state = "running";
 let attempts = 0;
 
-const rows = STAGES.map((stage) => {
-  const row = document.createElement("li");
-  row.className = "stage pending";
+const buttons = STAGES.map((stage) => {
+  const button = document.createElement("div");
+  button.className = "button pending";
 
-  const dot = document.createElement("span");
-  dot.className = "dot";
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", "0 0 100 100");
+  svg.innerHTML = SHAPES[stage.shape];
+  button.appendChild(svg);
 
   const label = document.createElement("span");
   label.className = "label";
   label.textContent = stage.label;
+  button.appendChild(label);
 
-  row.appendChild(dot);
-  row.appendChild(label);
-  stageList.appendChild(row);
-
-  return { row, label };
+  buttonRow.appendChild(button);
+  return button;
 });
 
 function render() {
-  rows.forEach(({ row, label }, index) => {
+  buttons.forEach((button, index) => {
     let modifier = "pending";
     if (state === "failed" && index === current) modifier = "failed";
     else if (index < current) modifier = "done";
     else if (index === current) modifier = "active";
-    row.className = "stage " + modifier;
-
-    let text = STAGES[index].label;
-    if (modifier === "active" && attempts > 1 && STAGES[index].id === "webkit")
-      text += " (attempt " + attempts + ")";
-    label.textContent = text;
+    button.className = "button " + modifier;
   });
+
+  const reached = state === "done" ? STAGES.length - 1 : Math.max(current, 0);
+  const span = STAGES.length - 1;
+  trackFill.style.width = (reached / span) * 100 + "%";
 }
 
 function advance(id) {
@@ -68,7 +79,7 @@ function setStatus(text) {
 
 function complete() {
   state = "done";
-  current = rows.length;
+  current = STAGES.length;
   setStatus("Ready");
   statusBox.className = "done";
   render();
@@ -105,7 +116,9 @@ function writeLog(message, type = "log", replace = false) {
     advance("payloads");
   } else if (/^Attempt:/.test(text)) {
     attempts = parseInt(text.slice(8), 10) || attempts;
-    render();
+    if (attempts > 1 && current === STAGE_INDEX.get("webkit")) {
+      setStatus("Establishing WebKit primitive (attempt " + attempts + ")");
+    }
   }
 }
 
@@ -154,9 +167,11 @@ async function run() {
   writeLog("Firmware: " + window.fw_str, "info");
 
   advance("webkit");
+  setStatus("Establishing WebKit primitive");
   const primitive = await getPrimitive();
   writeLog("WebKit base: 0x" + getWebKitBase().toString(16), "info");
 
+  setStatus("Running kernel exploit");
   await import("./relapse_exploit.js");
   await main(primitive);
   complete();
