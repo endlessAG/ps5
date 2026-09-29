@@ -95,6 +95,15 @@ function fail(message) {
   render();
 }
 
+function unsupported(reason) {
+  state = "unsupported";
+  setStatus(reason);
+  statusBox.className = "unsupported";
+  document.body.classList.add("unsupported");
+  writeLog(reason, "info");
+  render();
+}
+
 function writeLog(message, type = "log", replace = false) {
   let line = replace ? logBox.lastElementChild : null;
   if (!line) {
@@ -157,8 +166,7 @@ function getWebKitBase() {
 
 async function run() {
   const rejection = window.firmware.rejection();
-  if (rejection)
-    throw new Error(rejection);
+  if (rejection) return unsupported(rejection);
 
   firmwareLabel.textContent = window.fw_str;
 
