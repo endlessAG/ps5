@@ -6,13 +6,186 @@
   <title>PS5-Relapse</title>
   <style>
     html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
       background: #060606;
       color: #fff;
+      font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 24px 24px 24px;
+      box-sizing: border-box;
+    }
+
+    #app {
+      width: 100%;
+      max-width: 460px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    h1 {
+      margin: 0 0 4px 0;
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+    }
+
+    #sub {
+      margin: 0 0 28px 0;
+      font-size: 13px;
+      color: #8a8a8a;
+    }
+
+    #status {
+      display: flex;
+      align-items: center;
+      font-size: 15px;
+      margin-bottom: 22px;
+      min-height: 20px;
+    }
+
+    #status-text {
+      font-weight: 500;
+    }
+
+    #status.failed #status-text { color: #ff6b6b; }
+    #status.done  #status-text { color: #4ade80; }
+
+    .spinner {
+      width: 15px;
+      height: 15px;
+      margin-right: 10px;
+      border: 2px solid #2e2e2e;
+      border-top-color: #e5e5e5;
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+      flex: 0 0 auto;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    #status.done .spinner,
+    #status.failed .spinner {
+      display: none;
+    }
+
+    #stages {
+      list-style: none;
+      margin: 0 0 28px 0;
+      padding: 0;
+    }
+
+    .stage {
+      display: flex;
+      align-items: center;
+      padding: 11px 0;
+      font-size: 14px;
+      border-bottom: 1px solid #161616;
+    }
+
+    .stage:last-child { border-bottom: 0; }
+
+    .stage .dot {
+      width: 8px;
+      height: 8px;
+      margin-right: 14px;
+      border-radius: 50%;
+      background: #2e2e2e;
+      flex: 0 0 auto;
+    }
+
+    .stage .label { color: #4a4a4a; }
+
+    .stage.pending .dot { background: #2e2e2e; }
+    .stage.pending .label { color: #4a4a4a; }
+
+    .stage.active .dot { background: #fff; }
+    .stage.active .label { color: #fff; }
+
+    .stage.done .dot { background: #4ade80; }
+    .stage.done .label { color: #8a8a8a; }
+
+    .stage.failed .dot { background: #ff6b6b; }
+
+    #details {
+      border-top: 1px solid #161616;
+      padding-top: 14px;
+    }
+
+    #details summary {
+      font-size: 12px;
+      color: #6a6a6a;
+      cursor: pointer;
+      list-style: none;
+      user-select: none;
+    }
+
+    #details summary::-webkit-details-marker { display: none; }
+
+    #details summary::before {
+      content: "› ";
+      display: inline-block;
+      transition: transform 0.15s ease;
+    }
+
+    #details[open] summary::before {
+      transform: rotate(90deg);
+    }
+
+    #details-log {
+      margin-top: 12px;
+      max-height: 40vh;
+      overflow-y: auto;
+      font-family: ui-monospace, Menlo, Consolas, monospace;
+      font-size: 11px;
+      line-height: 1.55;
+      color: #6a6a6a;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    #error {
+      display: none;
+      margin: 0 0 20px 0;
+      padding: 12px 14px;
+      border-radius: 6px;
+      background: #1a0f0f;
+      border: 1px solid #3d1f1f;
+      color: #ff9a9a;
+      font-size: 13px;
+      line-height: 1.5;
     }
   </style>
 </head>
 <body>
-  <div id="console"></div>
+  <div id="app">
+    <h1>PS5 Relapse</h1>
+    <p id="sub">Firmware <span id="fw">&mdash;</span></p>
+
+    <div id="status" class="running">
+      <span class="spinner"></span>
+      <span id="status-text">Starting&hellip;</span>
+    </div>
+
+    <ul id="stages"></ul>
+
+    <p id="error"></p>
+
+    <details id="details">
+      <summary>Details</summary>
+      <div id="details-log"></div>
+    </details>
+  </div>
+
   <script src="./src/firmware.js"></script>
   <script src="./src/main.js"></script>
   <script src="./src/rop.js"></script>
