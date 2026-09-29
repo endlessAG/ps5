@@ -23,11 +23,11 @@ Supported firmware: 7.00 through 13.60.
 
 ## Usage
 
-- In the network settings, set Primary DNS to `45.56.67.85` (recommended).
-- Either run `python serve.py` locally, which serves this directory on port `8000`, or open
-  `https://ntfargo.github.io/Relapse-Exploit/` on the PS5.
-- The kernel stage fetches the binaries in `payloads/` over HTTP at runtime, and the ELF loader listens
-  on port `9021` afterwards.
+- Open the host on the PS5 at the self-hosted URL for this directory.
+- Alternatively, run `python serve.py` locally, which serves this directory on port `8000`.
+- The page fetches the binaries in `payloads/` over HTTP at runtime, so whatever server hosts
+  `index.html` must also expose `payloads/` next to it. Once the kernel stage finishes, the ELF loader
+  listens on port `9021`.
 
 ## Repository layout
 
