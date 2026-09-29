@@ -21,11 +21,13 @@ Browser stage uses JSC info leaks and a structured clone object pool mismatch to
 | `elfldr-ps5-1360.elf` | [ntfargo/Relapse-Exploit](https://github.com/ntfargo/Relapse-Exploit) |
 | `etaHEN.elf` | [ntfargo/Relapse-Exploit](https://github.com/ntfargo/Relapse-Exploit) |
 | `kexp_2026_05_25.bin` | [ntfargo/Relapse-Exploit](https://github.com/ntfargo/Relapse-Exploit) |
-| `kstuff.elf` | [ntfargo/Relapse-Exploit](https://github.com/ntfargo/Relapse-Exploit) |
+| `kstuff.elf` | [ntfargo/Relapse-Exploit](https://github.com/ntfargo/Relapse-Exploit), locally patched |
 | `shadowmountplus.elf` | [ntfargo/Relapse-Exploit](https://github.com/ntfargo/Relapse-Exploit) |
 | `pldmgr_v0.5.2.elf` | [itsPLK/ps5-payload-manager](https://github.com/itsPLK/ps5-payload-manager) v0.5.2 |
 
 Run `python fetch_payloads.py` to verify the committed files against pinned SHA-256 hashes, or to re-download any that are missing or corrupt. It is safe to re-run.
+
+`kstuff.elf` carries a one-byte local patch: the `sub rax` immediate at `0x14372f` is changed from `0x00a8406e` to `0x00aa406e`. The script knows both the pristine and patched hashes and re-applies the byte after downloading, so a fresh clone reproduces it rather than silently reverting to the upstream binary. Remove the `patch` key from that entry to track the unmodified upstream build.
 
 ## Credits
 ntfargo, ufm42, Sonic-Iso, Jordy, Dr. Yenyen, TheFlow, SlidyBat,  Flatz, cow, nhk, bollarz, Sleirsgoevy, EchoStretch, EarthOnion, itsPLK.
