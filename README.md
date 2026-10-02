@@ -11,9 +11,14 @@ Supported firmware: 7.00 through 13.60.
 - **Automatic payload sequence.** Once elfldr is listening, `pldmgr` is sent automatically; everything
   else is installed from its menu. The order and the per-payload delay live in `PAYLOAD_SEQUENCE` and
   `PAYLOAD_SETTLE_MS` in `src/kexp.js`, and a per-payload `delayAfter` overrides the delay.
+- **Already-jailbroken check.** Before the kernel stage, `src/jailbreak.js` tries to connect to
+  `127.0.0.1:9021`, the port elfldr listens on once the chain has completed. If it answers, the exploit
+  already ran, so the kernel stage and the payload load are skipped and the page reports
+  `Already jailbroken`. The check runs from the ROP chain, after the WebKit stage, because a raw TCP
+  listener cannot be told apart from a refused connection from the page.
 - **Progress UI.** The raw log console is replaced by a four-stage display (WebKit, Read/Write, Kernel,
   Payloads) using PlayStation button shapes. The detailed log moved into a collapsible drawer so the
-  current stage stays visible while the exploit runs.
+  current stage stays visible while the exploit runs. Stages that were skipped are drawn dim.
 - **Payloads committed.** The binaries are tracked in `payloads/`, so a fresh clone runs with no fetch step.
 - **Fewer allocations during kernel r/w.** The sysctl window helpers reuse persistent buffers rather than
   allocating on every kernel read and write. Measured on the AIO cleanup path, this drops `p.malloc`
@@ -33,6 +38,7 @@ Supported firmware: 7.00 through 13.60.
 | --- | --- |
 | `index.html`, `src/site.js` | Progress UI, stage rail and log drawer |
 | `src/main.js` | Entry point, wires the stages together and sends the payload sequence |
+| `src/jailbreak.js` | elfldr port probe, skips the kernel stage on an already-jailed console |
 | `src/relapse_exploit.js` | Kernel exploit, OID steering, AIO cleanup, kernel r/w primitives |
 | `src/rop.js`, `src/utils/` | ROP chain, syscall shims, `int64` and memory helpers |
 | `offsets/*.js` | Per-firmware offsets, selected at runtime by `src/firmware.js` |

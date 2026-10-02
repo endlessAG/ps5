@@ -33,6 +33,7 @@ const firmwareLabel = document.getElementById("fw");
 let current = -1;
 let state = "running";
 let attempts = 0;
+const skipped = new Set();
 
 const buttons = STAGES.map((stage) => {
   const button = document.createElement("div");
@@ -55,7 +56,8 @@ const buttons = STAGES.map((stage) => {
 function render() {
   buttons.forEach((button, index) => {
     let modifier = "pending";
-    if (state === "failed" && index === current) modifier = "failed";
+    if (skipped.has(index)) modifier = "skipped";
+    else if (state === "failed" && index === current) modifier = "failed";
     else if (index < current) modifier = "done";
     else if (index === current) modifier = "active";
     button.className = "button " + modifier;
@@ -75,6 +77,22 @@ function advance(id) {
 
 function setStatus(text) {
   statusText.textContent = text;
+}
+
+function skipStages(ids) {
+  for (const id of ids) {
+    const index = STAGE_INDEX.get(id);
+    if (index !== undefined) skipped.add(index);
+  }
+  render();
+}
+
+function alreadyJailed() {
+  state = "done";
+  current = STAGES.length;
+  setStatus("Already jailbroken");
+  statusBox.className = "done";
+  render();
 }
 
 function complete() {
@@ -181,7 +199,11 @@ async function run() {
 
   setStatus("Running kernel exploit");
   await import("./relapse_exploit.js");
-  await main(primitive);
+  const outcome = await main(primitive);
+  if (outcome === "already-jailed") {
+    skipStages(["kernel", "payloads"]);
+    return alreadyJailed();
+  }
   complete();
 }
 

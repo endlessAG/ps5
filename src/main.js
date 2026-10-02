@@ -261,6 +261,14 @@ async function prepareRop(p) {
 
 async function main(userlandRW) {
   const { p, chain } = await prepareRop(userlandRW);
+  const { isElfldrListening } = await import("./jailbreak.js");
+
+  if (await isElfldrListening(p, chain)) {
+    log("elfldr is already listening on port 9021", "info");
+    log("Kernel: already jailbroken, skipping the kernel stage and payload load", "info");
+    return "already-jailed";
+  }
+
   const { runKernelExploit } = await import("./relapse_exploit.js");
   const result = await runKernelExploit(p, chain, log);
   if (!result || !result.done)
@@ -280,6 +288,8 @@ async function main(userlandRW) {
   } else {
     log("kernel chain complete: root and sandbox escape are active", "info");
   }
+
+  return "done";
 }
 
 const fwScript = document.createElement("script");
