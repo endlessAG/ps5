@@ -154,11 +154,10 @@ async function sendElf(name, payload, p, chain) {
 }
 
 // Sent to elfldr on port 9021, in this order, once the kernel stage completes.
+// pldmgr is the only autoloaded payload; further payloads are installed from its
+// own menu rather than being pushed by the exploit.
 export const PAYLOAD_SEQUENCE = [
   { name: "pldmgr_v0.5.2.elf" },
-  { name: "kstuff.elf" },
-  { name: "shadowmountplus.elf" },
-  { name: "etaHEN.elf" },
 ];
 
 // Settle time between payloads so each one can initialise before the next

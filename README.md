@@ -8,15 +8,13 @@ Supported firmware: 7.00 through 13.60.
 
 ## What this fork changes
 
-- **Automatic payload sequence.** Once elfldr is listening, payloads are sent in a fixed order 4 seconds
-  apart instead of being optional. The order and the delay live in `PAYLOAD_SEQUENCE` and
+- **Automatic payload sequence.** Once elfldr is listening, `pldmgr` is sent automatically; everything
+  else is installed from its menu. The order and the per-payload delay live in `PAYLOAD_SEQUENCE` and
   `PAYLOAD_SETTLE_MS` in `src/kexp.js`, and a per-payload `delayAfter` overrides the delay.
 - **Progress UI.** The raw log console is replaced by a four-stage display (WebKit, Read/Write, Kernel,
   Payloads) using PlayStation button shapes. The detailed log moved into a collapsible drawer so the
   current stage stays visible while the exploit runs.
 - **Payloads committed.** The binaries are tracked in `payloads/`, so a fresh clone runs with no fetch step.
-- **Reproducible `kstuff.elf` patch.** `fetch_payloads.py` verifies every binary against a pinned SHA-256
-  and re-applies the local patch after downloading, instead of silently reverting to the upstream build.
 - **Fewer allocations during kernel r/w.** The sysctl window helpers reuse persistent buffers rather than
   allocating on every kernel read and write. Measured on the AIO cleanup path, this drops `p.malloc`
   calls from 3.00 to 0.00 per call and removes roughly 1 MB of permanently pinned memory per run.
@@ -60,17 +58,15 @@ redistributed as-is and not covered by this repo's MIT license:
 | File | Source |
 | --- | --- |
 | `elfldr-ps5-1360.elf` | [ntfargo/Relapse-Exploit](https://github.com/ntfargo/Relapse-Exploit) |
-| `etaHEN.elf` | [ntfargo/Relapse-Exploit](https://github.com/ntfargo/Relapse-Exploit) |
 | `kexp_2026_05_25.bin` | [ntfargo/Relapse-Exploit](https://github.com/ntfargo/Relapse-Exploit) |
-| `kstuff.elf` | [ntfargo/Relapse-Exploit](https://github.com/ntfargo/Relapse-Exploit), locally patched |
-| `shadowmountplus.elf` | [ntfargo/Relapse-Exploit](https://github.com/ntfargo/Relapse-Exploit) |
 | `pldmgr_v0.5.2.elf` | [itsPLK/ps5-payload-manager](https://github.com/itsPLK/ps5-payload-manager) v0.5.2 |
 
-`kstuff.elf` carries a one-byte local patch: the `sub rax` immediate at `0x14372f` is changed from
-`0x00a8406e` to `0x00aa406e`. `fetch_payloads.py` knows both the pristine and patched hashes and re-applies
-the byte after downloading. Run it to verify the committed files or to repair any that are missing or
-corrupt. It is safe to re-run, and is never required for a fresh clone. Remove the `patch` key from that
-entry to track the unmodified upstream build.
+`pldmgr_v0.5.2.elf` is the only payload the exploit loads by default; further payloads are installed
+from its own menu. `fetch_payloads.py` verifies every committed binary against a pinned SHA-256. Run it
+to verify the committed files or to repair any that are missing or corrupt. It is safe to re-run, and is
+never required for a fresh clone. To track a locally patched build, add a `patch` key with the
+`(offset, before, after)` edit plus the patched `sha256` and the pristine `upstream_sha256`; the edit is
+re-applied after downloading.
 
 ## Credits
 

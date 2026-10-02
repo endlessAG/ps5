@@ -18,24 +18,9 @@ PAYLOADS = {
         "url": f"{RELAPSE}/elfldr-ps5-1360.elf",
         "sha256": "de5dd480d12637527ba2d75e35de851adbb59c455293fa32588c492ef6b44b81",
     },
-    "etaHEN.elf": {
-        "url": f"{RELAPSE}/etaHEN.elf",
-        "sha256": "26034dfbb88dd8be344fee1876c387bfcba0386edb079014e18ec25580368f6d",
-    },
     "kexp_2026_05_25.bin": {
         "url": f"{RELAPSE}/kexp_2026_05_25.bin",
         "sha256": "7cfb3a8cb86db67893c360ae3531f460f800e9f24039797038e6e81fc50f18a9",
-    },
-    "kstuff.elf": {
-        "url": f"{RELAPSE}/kstuff.elf",
-        "sha256": "ab9a6cb4d3b1daf139d4d646e402b1cf569071acd64599c936d7a3a6164dc779",
-        "upstream_sha256": "858880a8adbedaabfaced025384f4f6f908cfe44f1a049070ad8df911c22b972",
-        "patch": (1324847, 0xA8, 0xAA),
-        "note": "sub rax immediate at 0x14372f, 0x00a8406e -> 0x00aa406e",
-    },
-    "shadowmountplus.elf": {
-        "url": f"{RELAPSE}/shadowmountplus.elf",
-        "sha256": "0b30a1c23b83ebb2aa6523c8caaa5801ee89bde00e90cb36f392a29bb0bdb403",
     },
     "pldmgr_v0.5.2.elf": {
         "url": f"{PLDMGR}/v0.5.2/pldmgr_v0.5.2.elf",
